@@ -9,7 +9,15 @@ function transformValue(doc, ret: { [key: string]: any }) {
   delete ret.password;
 }
 
-export const UserSchema = new mongoose.Schema(
+export interface IUserSchema extends mongoose.Document {
+  email: string;
+  password: string;
+  is_confirmed: boolean;
+  comparePassword: (password: string) => Promise<Boolean>
+  getEncryptedPassword: (password: string) => Promise<string>;
+};
+
+export const UserSchema = new mongoose.Schema<IUserSchema>(
   {
     email: {
       type: String,
@@ -43,7 +51,7 @@ export const UserSchema = new mongoose.Schema(
   },
 );
 
-UserSchema.methods.getEncryptedPassword = (password: string) => {
+UserSchema.methods.getEncryptedPassword = (password: string): Promise<string> => {
   return bcrypt.hash(String(password), SALT_ROUNDS);
 };
 
@@ -52,10 +60,9 @@ UserSchema.methods.compareEncryptedPassword = function (password: string) {
 };
 
 UserSchema.pre('save', async function (next) {
-  const self = this as IUser;
   if (!this.isModified('password')) {
     return next();
   }
-  self.password = await self.getEncryptedPassword(self.password);
+  this.password = await this.getEncryptedPassword(this.password);
   next();
 });

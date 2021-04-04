@@ -27,7 +27,7 @@ export class TokenService {
     }).save();
   }
 
-  public deleteTokenForUserId(userId: string): Query<any> {
+  public deleteTokenForUserId(userId: string): Query<any, any> {
     return this.tokenModel.remove({
       user_id: userId,
     });

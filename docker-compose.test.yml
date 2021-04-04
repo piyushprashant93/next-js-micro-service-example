@@ -43,7 +43,7 @@ services:
     networks:
       - backend
     ports:
-      - 8005:8005
+      - ${PERMISSION_SERVICE_PORT}:${PERMISSION_SERVICE_PORT}
   user:
     build: ./user
     restart: always
@@ -65,15 +65,12 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     volumes:
       - "./db/init/:/docker-entrypoint-initdb.d/"
-    ports:
-      - 27017:27017
     networks:
       - backend
     env_file:
       - .env.test
+    ports:
+      - 27017:27017
 networks:
   backend:
     driver: bridge
-  frontend:
-    external:
-      name: infrastructure
