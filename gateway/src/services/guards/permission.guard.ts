@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -29,12 +30,12 @@ export class PermissionGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
 
-    const permissionInfo = await this.permissionServiceClient
-      .send('permission_check', {
+    const permissionInfo = await firstValueFrom(
+      this.permissionServiceClient.send('permission_check', {
         permission,
         user: request.user,
-      })
-      .toPromise();
+      }),
+    );
 
     if (!permissionInfo || permissionInfo.status !== HttpStatus.OK) {
       throw new HttpException(

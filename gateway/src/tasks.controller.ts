@@ -11,6 +11,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 
@@ -49,9 +50,9 @@ export class TasksController {
   ): Promise<GetTasksResponseDto> {
     const userInfo = request.user;
 
-    const tasksResponse: IServiceTaskSearchByUserIdResponse = await this.taskServiceClient
-      .send('task_search_by_user_id', userInfo.id)
-      .toPromise();
+    const tasksResponse: IServiceTaskSearchByUserIdResponse = await firstValueFrom(
+      this.taskServiceClient.send('task_search_by_user_id', userInfo.id),
+    );
 
     return {
       message: tasksResponse.message,
@@ -73,9 +74,12 @@ export class TasksController {
     @Body() taskRequest: CreateTaskDto,
   ): Promise<CreateTaskResponseDto> {
     const userInfo = request.user;
-    const createTaskResponse: IServiceTaskCreateResponse = await this.taskServiceClient
-      .send('task_create', Object.assign(taskRequest, { user_id: userInfo.id }))
-      .toPromise();
+    const createTaskResponse: IServiceTaskCreateResponse = await firstValueFrom(
+      this.taskServiceClient.send(
+        'task_create',
+        Object.assign(taskRequest, { user_id: userInfo.id }),
+      ),
+    );
 
     if (createTaskResponse.status !== HttpStatus.CREATED) {
       throw new HttpException(
@@ -109,12 +113,12 @@ export class TasksController {
   ): Promise<DeleteTaskResponseDto> {
     const userInfo = request.user;
 
-    const deleteTaskResponse: IServiceTaskDeleteResponse = await this.taskServiceClient
-      .send('task_delete_by_id', {
+    const deleteTaskResponse: IServiceTaskDeleteResponse = await firstValueFrom(
+      this.taskServiceClient.send('task_delete_by_id', {
         id: params.id,
         userId: userInfo.id,
-      })
-      .toPromise();
+      }),
+    );
 
     if (deleteTaskResponse.status !== HttpStatus.OK) {
       throw new HttpException(
@@ -146,13 +150,13 @@ export class TasksController {
     @Body() taskRequest: UpdateTaskDto,
   ): Promise<UpdateTaskResponseDto> {
     const userInfo = request.user;
-    const updateTaskResponse: IServiceTaskUpdateByIdResponse = await this.taskServiceClient
-      .send('task_update_by_id', {
+    const updateTaskResponse: IServiceTaskUpdateByIdResponse = await firstValueFrom(
+      this.taskServiceClient.send('task_update_by_id', {
         id: params.id,
         userId: userInfo.id,
         task: taskRequest,
-      })
-      .toPromise();
+      }),
+    );
 
     if (updateTaskResponse.status !== HttpStatus.OK) {
       throw new HttpException(

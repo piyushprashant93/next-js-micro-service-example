@@ -10,6 +10,7 @@ import {
   HttpException,
   Param,
 } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 
@@ -49,9 +50,9 @@ export class UsersController {
   ): Promise<GetUserByTokenResponseDto> {
     const userInfo = request.user;
 
-    const userResponse: IServiceUserGetByIdResponse = await this.userServiceClient
-      .send('user_get_by_id', userInfo.id)
-      .toPromise();
+    const userResponse: IServiceUserGetByIdResponse = await firstValueFrom(
+      this.userServiceClient.send('user_get_by_id', userInfo.id),
+    );
 
     return {
       message: userResponse.message,
@@ -69,9 +70,9 @@ export class UsersController {
   public async createUser(
     @Body() userRequest: CreateUserDto,
   ): Promise<CreateUserResponseDto> {
-    const createUserResponse: IServiceUserCreateResponse = await this.userServiceClient
-      .send('user_create', userRequest)
-      .toPromise();
+    const createUserResponse: IServiceUserCreateResponse = await firstValueFrom(
+      this.userServiceClient.send('user_create', userRequest),
+    );
     if (createUserResponse.status !== HttpStatus.CREATED) {
       throw new HttpException(
         {
@@ -83,11 +84,11 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse = await this.tokenServiceClient
-      .send('token_create', {
+    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
+      this.tokenServiceClient.send('token_create', {
         userId: createUserResponse.user.id,
-      })
-      .toPromise();
+      }),
+    );
 
     return {
       message: createUserResponse.message,
@@ -106,9 +107,9 @@ export class UsersController {
   public async loginUser(
     @Body() loginRequest: LoginUserDto,
   ): Promise<LoginUserResponseDto> {
-    const getUserResponse: IServiceUserSearchResponse = await this.userServiceClient
-      .send('user_search_by_credentials', loginRequest)
-      .toPromise();
+    const getUserResponse: IServiceUserSearchResponse = await firstValueFrom(
+      this.userServiceClient.send('user_search_by_credentials', loginRequest),
+    );
 
     if (getUserResponse.status !== HttpStatus.OK) {
       throw new HttpException(
@@ -121,11 +122,11 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse = await this.tokenServiceClient
-      .send('token_create', {
+    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
+      this.tokenServiceClient.send('token_create', {
         userId: getUserResponse.user.id,
-      })
-      .toPromise();
+      }),
+    );
 
     return {
       message: createTokenResponse.message,
@@ -146,11 +147,11 @@ export class UsersController {
   ): Promise<LogoutUserResponseDto> {
     const userInfo = request.user;
 
-    const destroyTokenResponse: IServiceTokenDestroyResponse = await this.tokenServiceClient
-      .send('token_destroy', {
+    const destroyTokenResponse: IServiceTokenDestroyResponse = await firstValueFrom(
+      this.tokenServiceClient.send('token_destroy', {
         userId: userInfo.id,
-      })
-      .toPromise();
+      }),
+    );
 
     if (destroyTokenResponse.status !== HttpStatus.OK) {
       throw new HttpException(
@@ -177,11 +178,11 @@ export class UsersController {
   public async confirmUser(
     @Param() params: ConfirmUserDto,
   ): Promise<ConfirmUserResponseDto> {
-    const confirmUserResponse: IServiceUserConfirmResponse = await this.userServiceClient
-      .send('user_confirm', {
+    const confirmUserResponse: IServiceUserConfirmResponse = await firstValueFrom(
+      this.userServiceClient.send('user_confirm', {
         link: params.link,
-      })
-      .toPromise();
+      }),
+    );
 
     if (confirmUserResponse.status !== HttpStatus.OK) {
       throw new HttpException(

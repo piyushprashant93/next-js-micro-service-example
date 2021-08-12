@@ -5,6 +5,7 @@ import {
   ExecutionContext,
   HttpException,
 } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -27,11 +28,11 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userTokenInfo = await this.tokenServiceClient
-      .send('token_decode', {
+    const userTokenInfo = await firstValueFrom(
+      this.tokenServiceClient.send('token_decode', {
         token: request.headers.authorization,
-      })
-      .toPromise();
+      }),
+    );
 
     if (!userTokenInfo || !userTokenInfo.data) {
       throw new HttpException(
@@ -44,9 +45,9 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const userInfo = await this.userServiceClient
-      .send('user_get_by_id', userTokenInfo.data.userId)
-      .toPromise();
+    const userInfo = await firstValueFrom(
+      this.userServiceClient.send('user_get_by_id', userTokenInfo.data.userId),
+    );
 
     request.user = userInfo.user;
     return true;
