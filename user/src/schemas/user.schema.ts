@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { IUser } from '../interfaces/user.interface';
 
 const SALT_ROUNDS = 10;
 
@@ -13,9 +12,9 @@ export interface IUserSchema extends mongoose.Document {
   email: string;
   password: string;
   is_confirmed: boolean;
-  comparePassword: (password: string) => Promise<Boolean>
+  comparePassword: (password: string) => Promise<boolean>;
   getEncryptedPassword: (password: string) => Promise<string>;
-};
+}
 
 export const UserSchema = new mongoose.Schema<IUserSchema>(
   {
@@ -51,7 +50,9 @@ export const UserSchema = new mongoose.Schema<IUserSchema>(
   },
 );
 
-UserSchema.methods.getEncryptedPassword = (password: string): Promise<string> => {
+UserSchema.methods.getEncryptedPassword = (
+  password: string,
+): Promise<string> => {
   return bcrypt.hash(String(password), SALT_ROUNDS);
 };
 

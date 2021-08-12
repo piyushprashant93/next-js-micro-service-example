@@ -5,8 +5,8 @@ export class MailerConfigService implements MailerOptionsFactory {
     return {
       transport: process.env.MAILER_DSN,
       defaults: {
-        from: process.env.MAILER_FROM
-      }
+        from: process.env.MAILER_FROM,
+      },
     };
   }
 }

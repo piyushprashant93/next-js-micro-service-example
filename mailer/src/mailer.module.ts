@@ -7,14 +7,10 @@ import { ConfigService } from './services/config/config.service';
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      useClass: MailerConfigService
-    })
+      useClass: MailerConfigService,
+    }),
   ],
-  providers: [
-    ConfigService
-  ],
-  controllers: [
-    MailerController
-  ]
+  providers: [ConfigService],
+  controllers: [MailerController],
 })
 export class AppMailerModule {}
